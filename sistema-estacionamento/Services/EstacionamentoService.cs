@@ -1,9 +1,9 @@
-using sistema_estacionamento.Models;
+﻿using sistema_estacionamento.Models;
 using System.Text.RegularExpressions;
 
-namespace SistemaEstacionamento.Models
+namespace SistemaEstacionamento.Services
 {
-    public class Estacionamento
+    public class EstacionamentoService
     {
         private const int TotalVagas = 20;
         private List<Veiculo> veiculos = new List<Veiculo>();
@@ -28,7 +28,7 @@ namespace SistemaEstacionamento.Models
             }
             else
             {
-                throw new ArgumentException("Placa inv�lida");
+                throw new ArgumentException("Placa inválida");
             }
         }
 

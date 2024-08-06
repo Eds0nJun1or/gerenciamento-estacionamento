@@ -1,23 +1,29 @@
 using Microsoft.AspNetCore.Mvc;
-using EstacionamentoAPI.Models;
+using sistema_estacionamento.Controllers.Request.EstacionamentoAPI.Controllers.Requests;
+using SistemaEstacionamento.Services;
 
-namespace EstacionamentoAPI.Controllers
+namespace SistemaEstacionamento.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class EstacionamentoController : ControllerBase
     {
-        private static Estacionamento _estacionamento = new Estacionamento();
+        private readonly EstacionamentoService _estacionamentoService;
+
+        public EstacionamentoController(EstacionamentoService estacionamentoService)
+        {
+            _estacionamentoService = estacionamentoService;
+        }
 
         [HttpPost("Adicionar")]
-        public IActionResult AdicionarVeiculo([FromBody] PlacaRequest request)
+        public IActionResult AdicionarVeiculo([FromBody] AdicionarVeiculo request)
         {
             try
             {
-                _estacionamento.AdicionarVeiculo(request.Placa);
+                _estacionamentoService.AdicionarVeiculo(request.Placa, request.Modelo, request.Cor);
                 return Ok();
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -26,14 +32,21 @@ namespace EstacionamentoAPI.Controllers
         [HttpGet("Listar")]
         public IActionResult ListarVeiculos()
         {
-            var veiculos = _estacionamento.ListarVeiculos();
+            var veiculos = _estacionamentoService.ListarVeiculos();
             return Ok(veiculos);
         }
 
-        [HttpDelete("Remover")]
-        public IActionResult RemoverVeiculo([FromBody] RemoverRequest request)
+        [HttpGet("VagasDisponiveis")]
+        public IActionResult VagasDisponiveis()
         {
-            if (_estacionamento.RemoverVeiculo(request.Placa, request.Horas, out decimal valorTotal))
+            int vagasDisponiveis = _estacionamentoService.VagasDisponiveis();
+            return Ok(new { vagasDisponiveis });
+        }
+
+        [HttpDelete("Remover")]
+        public IActionResult RemoverVeiculo([FromBody] RemoverVeiculo request)
+        {
+            if (_estacionamentoService.RemoverVeiculo(request.Placa, out decimal valorTotal))
             {
                 string valorTotalFormatado = $"R$ {valorTotal:F2}";
                 return Ok(new { valorTotal = valorTotalFormatado });
@@ -41,16 +54,5 @@ namespace EstacionamentoAPI.Controllers
 
             return NotFound("Veículo não encontrado.");
         }
-    }
-
-    public class PlacaRequest
-    {
-        public string Placa { get; set; }
-    }
-
-    public class RemoverRequest
-    {
-        public string Placa { get; set; }
-        public int Horas { get; set; }
     }
 }
